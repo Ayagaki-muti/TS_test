@@ -398,7 +398,6 @@ int main(int argc, UNUSED char *argv[]) {
             goto end;
         }
     }
-    // ts response ********************************************************
     if (!req_bio) {
         goto end;
     }
@@ -408,7 +407,6 @@ int main(int argc, UNUSED char *argv[]) {
 
     ts_resp_ctx = TS_RESP_CTX_new();
     if (!ts_resp_ctx) {
-        // RetVal = TS_MemErr;
         goto end;
     }
 
@@ -417,63 +415,47 @@ int main(int argc, UNUSED char *argv[]) {
     if (x509_cacerts != nullptr) {
         nRet = TS_RESP_CTX_set_certs(ts_resp_ctx, x509_cacerts);
         if (!nRet) {
-            // RetVal = TS_CACertErr;
             goto end;
         }
     }
 
     nRet = TS_RESP_CTX_set_signer_cert(ts_resp_ctx, tsa_x509_);
     if (!nRet) {
-        // RetVal = TS_CertErr;
         goto end;
     }
 
     nRet = TS_RESP_CTX_set_signer_key(ts_resp_ctx, tsa_pri_key_);
     if (!nRet) {
-        // RetVal = TS_KeyErr;
         goto end;
     }
 
     policy_obj1 = OBJ_txt2obj("1.2.3.4.5.6.7.8", 0);
     if (!policy_obj1) {
-        // RetVal = TS_MemErr;
         goto end;
     }
 
     nRet = TS_RESP_CTX_set_def_policy(ts_resp_ctx, policy_obj1);
     if (!nRet) {
-        // RetVal = TS_PolicyErr;
         goto end;
     }
 
-    nRet = TS_RESP_CTX_add_md(ts_resp_ctx, EVP_sha256());   //可以set很多个
+    nRet = TS_RESP_CTX_add_md(ts_resp_ctx, EVP_sha256());
     if (!nRet) {
-        // RetVal = TS_RespHashErr;
         goto end;
     }
 
-    // Setting guaranteed time stamp accuracy.
-    nRet = TS_RESP_CTX_set_accuracy(ts_resp_ctx, 1, 500, 100);
+    nRet = TS_RESP_CTX_set_accuracy(ts_resp_ctx, 0, 1, 0);
     if (!nRet) {
-        // RetVal = TS_AccurErr;
         goto end;
     }
 
-    // Setting the precision of the time.
     nRet = TS_RESP_CTX_set_clock_precision_digits(ts_resp_ctx, 0);
     if (!nRet) {
-        // RetVal = TS_PreciErr;
         goto end;
     }
 
-    // Setting the ordering flaf if requested.
-    TS_RESP_CTX_add_flags(ts_resp_ctx, TS_ORDERING);
-
-    // Setting the TSA name required flag if requested.
-    TS_RESP_CTX_add_flags(ts_resp_ctx, TS_TSA_NAME);
-
-    // Creating the response.
     ts_resp = TS_RESP_create_response(ts_resp_ctx, req_bio);
+
     {
         auto a = TS_RESP_get_tst_info(ts_resp);
         auto b = TS_TST_INFO_get_version(a);
@@ -483,7 +465,8 @@ int main(int argc, UNUSED char *argv[]) {
         std::cout<< dd->length<<std::endl;
         for(int i = 0;i<dd->length * 8;i++){
             std::cout<< ASN1_BIT_STRING_get_bit(dd,i);
-        }std::cout<<std::endl;          //11100111011110010011100111001110
+        }std::cout<<std::endl;
+
         std::cout<<dd->data<<std::endl;
         std::cout<<"ERROR"<<std::endl;
 
